@@ -1,0 +1,97 @@
+package com.team4.catalogbackend.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.team4.catalogbackend.model.DTDMapping;
+import com.team4.catalogbackend.model.DTMapping;
+import com.team4.catalogbackend.model.TSC_Deliverables;
+import com.team4.catalogbackend.model.TSC_Technology;
+import com.team4.catalogbackend.service.DTDMappingService;
+import com.team4.catalogbackend.service.DTMappingService;
+import com.team4.catalogbackend.service.TSC_DeliverablesService;
+import com.team4.catalogbackend.service.TSC_TechnologyService;
+
+@RestController
+@RequestMapping("/api/service/0/savetsccatalog")
+public class TSCSaveMapping {
+
+	@Autowired
+	TSC_TechnologyService tsc_TechnologyService;
+	@Autowired
+	DTMappingService dtMappingService;
+
+	@Autowired
+	TSC_DeliverablesService tsc_DeliverablesService;
+	@Autowired
+	DTDMappingService dtdMappingService;
+
+	// For saving the Tenant created Mapping
+	@PostMapping("/savetenantmapping")
+	public void SaveTenantMapping(
+			@RequestBody Map<Long, Map<Long, Map<Long, Map<Long, Map<Long, List<Long>>>>>> mapping) {
+		for (Long domain : mapping.keySet()) {
+			for (Long technology : mapping.get(domain).keySet()) {
+				saveTenantTechnology(technology);
+				for (Long Deliverable : mapping.get(domain).get(technology).keySet()) {
+					saveTenantDeliverable(Deliverable);
+					for(Long Process: mapping.get(domain).get(technology).get(Deliverable).keySet()) {
+						saveTenantprocess(Process);
+						for(Long subProcess: mapping.get(domain).get(technology).get(Deliverable).get(Process).keySet()) {
+							saveTenantSubprocess(subProcess);
+							for(Long task: mapping.get(domain).get(technology).get(Deliverable).get(Process).get(subProcess)) {
+								saveTenantTask(task);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void saveTenantSubprocess(Long subProcess) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void saveTenantTask(Long task) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void saveTenantprocess(Long process) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void saveTenantDeliverable(Long deliverable) {
+		// TODO Auto-generated method stub
+		DTDMapping dtdMapping =  dtdMappingService.getDTDMappingById(deliverable);
+		String Deliverable_name = dtdMapping.getDeliverables().getDeliverablesName();
+		
+		List<TSC_Deliverables> tsc_Deliverables = tsc_DeliverablesService.findbydtdMapping(dtdMapping);
+		
+		if(tsc_Deliverables.size() == 0) {
+			TSC_Deliverables temp_tsc_Deliverables = new TSC_Deliverables(dtdMapping , Deliverable_name);
+					temp_tsc_Deliverables = tsc_DeliverablesService.saveTSC_Deliverables(temp_tsc_Deliverables);
+		}
+		
+	}
+
+	private void saveTenantTechnology(Long technology) {
+		// TODO Auto-generated method stub
+		DTMapping dtMapping =  dtMappingService.getDTMappingById(technology);
+		String technology_name = dtMapping.getTechnology().getTechnologyName();
+		List<TSC_Technology> tsc_Technology = tsc_TechnologyService.findbydtmapping(dtMapping);
+		if(tsc_Technology.size() == 0) {
+			TSC_Technology temp_tsc_Technology=new TSC_Technology(dtMapping , technology_name);	
+			temp_tsc_Technology = tsc_TechnologyService.saveTSC_Technology(temp_tsc_Technology);
+		}
+	}
+}
